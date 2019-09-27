@@ -9,6 +9,11 @@
             "UnauthRoleName": "whytheyui-production-20190927211816-unauthRole",
             "StackName": "whytheyui-production-20190927211816",
             "StackId": "arn:aws:cloudformation:eu-west-1:154682513313:stack/whytheyui-production-20190927211816/f4de92f0-e163-11e9-86a0-06d3aeb0d9f6"
+        },
+        "categories": {
+            "auth": {
+                "whytheyui49b2e0e6": {}
+            }
         }
     }
 }
