@@ -1,0 +1,14 @@
+{
+    "production": {
+        "awscloudformation": {
+            "AuthRoleName": "whytheyui-production-20190927211816-authRole",
+            "UnauthRoleArn": "arn:aws:iam::154682513313:role/whytheyui-production-20190927211816-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::154682513313:role/whytheyui-production-20190927211816-authRole",
+            "Region": "eu-west-1",
+            "DeploymentBucketName": "whytheyui-production-20190927211816-deployment",
+            "UnauthRoleName": "whytheyui-production-20190927211816-unauthRole",
+            "StackName": "whytheyui-production-20190927211816",
+            "StackId": "arn:aws:cloudformation:eu-west-1:154682513313:stack/whytheyui-production-20190927211816/f4de92f0-e163-11e9-86a0-06d3aeb0d9f6"
+        }
+    }
+}
