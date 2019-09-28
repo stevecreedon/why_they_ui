@@ -6,6 +6,7 @@ This is a variation (& much more detailed breakdown) of the tutorial [react/ampl
 1. Deploy the app to AWS (in production environment)
 1. Enable users to sign-up and in using AWS Cognito
 1. Upload and view files the authenticated user has uploaded to a non-public S3.
+1. Some basic analytics in AWS Pinpoint to track user actions
 
 ## 1. Create the React App
 
