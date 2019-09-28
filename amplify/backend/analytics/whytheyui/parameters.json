@@ -1,0 +1,20 @@
+{
+    "appName": "whytheyui",
+    "roleName": "pinpointLambdaRole0443a938",
+    "cloudWatchPolicyName": "cloudWatchPolicy0443a938",
+    "pinpointPolicyName": "pinpointPolicy0443a938",
+    "authPolicyName": "pinpoint_amplify_0443a938",
+    "unauthPolicyName": "pinpoint_amplify_0443a938",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "authRoleArn": {
+        "Fn::GetAtt": [
+            "AuthRole",
+            "Arn"
+        ]
+    }
+}

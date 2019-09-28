@@ -1,6 +1,6 @@
 {
     "identityPoolName": "whytheyui49b2e0e6_identitypool_49b2e0e6",
-    "allowUnauthenticatedIdentities": false,
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "whythe49b2e0e6",
     "userPoolName": "whytheyui49b2e0e6_userpool_49b2e0e6",
     "autoVerifiedAttributes": [
