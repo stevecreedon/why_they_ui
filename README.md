@@ -582,3 +582,361 @@ modified:   amplify/backend/backend-config.json
 modified:   amplify/team-provider-info.json
 ```
 
+## 5. Uploads to S3
+
+Locally add storage to amplify. 
+
+    amplify add storage
+    
+Choose the option to allow only authenticated users (different from tutorial) 
+    
+```
+? Please select from one of the below mentioned services Content (Images, audio, video, etc.)
+? Please provide a friendly name for your resource that will be used to label this category in the project: s3d5661de9
+? Please provide bucket name: why-they-ui8e365250dbc34261827c0224d79c0b3d
+? Who should have access: Auth users only
+? What kind of access do you want for Authenticated users? (Press <space> to select, <a> to toggle all, <i> to invert selection)
+? Do you want to add a Lambda Trigger for your S3 Bucket? No
+Successfully added resource s3d5661de9 locally
+
+Some next steps:
+"amplify push" builds all of your local backend resources and provisions them in the cloud
+"amplify publish" builds all of your local backend and front-end resources (if you added hosting category) and provisions them in the cloud
+```
+
+These files were changed locally:
+
+```
+git status
+modified:   amplify/backend/auth/whytheyui49b2e0e6/parameters.json
+modified:   amplify/backend/backend-config.json
+new file:   amplify/backend/storage/s3d5661de9/parameters.json
+new file:   amplify/backend/storage/s3d5661de9/s3-cloudformation-template.json
+```
+    
+Now push these changes onto AWS
+
+    amplify push
+    
+```
+Current Environment: production
+
+| Category | Resource name     | Operation | Provider plugin   |
+| -------- | ----------------- | --------- | ----------------- |
+| Storage  | s3d5661de9        | Create    | awscloudformation |
+| Hosting  | S3AndCloudFront   | No Change | awscloudformation |
+| Auth     | whytheyui49b2e0e6 | No Change | awscloudformation |
+? Are you sure you want to continue? Yes
+⠹ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE    authwhytheyui49b2e0e6               AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:40 GMT+0100 (British Summer Time)
+UPDATE_COMPLETE    hostingS3AndCloudFront              AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:40 GMT+0100 (British Summer Time)
+CREATE_IN_PROGRESS storages3d5661de9                   AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:40 GMT+0100 (British Summer Time) Resource creation Initiated
+UPDATE_IN_PROGRESS authwhytheyui49b2e0e6               AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:40 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS hostingS3AndCloudFront              AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:40 GMT+0100 (British Summer Time)
+CREATE_IN_PROGRESS storages3d5661de9                   AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:39 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS whytheyui-production-20190927211816 AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:37 GMT+0100 (British Summer Time) User Initiated
+⠴ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS whytheyui-production-20190927211816-storages3d5661de9-1C7ALZOIDU1TK AWS::CloudFormation::Stack Sat Sep 28 2019 13:15:40 GMT+0100 (British Summer Time) User Initiated
+⠼ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS S3Bucket AWS::S3::Bucket Sat Sep 28 2019 13:15:45 GMT+0100 (British Summer Time) Resource creation Initiated
+CREATE_IN_PROGRESS S3Bucket AWS::S3::Bucket Sat Sep 28 2019 13:15:44 GMT+0100 (British Summer Time)
+⠙ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_COMPLETE S3Bucket AWS::S3::Bucket Sat Sep 28 2019 13:16:06 GMT+0100 (British Summer Time)
+⠇ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_COMPLETE whytheyui-production-20190927211816-storages3d5661de9-1C7ALZOIDU1TK AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:08 GMT+0100 (British Summer Time)
+⠇ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE                     authwhytheyui49b2e0e6               AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:17 GMT+0100 (British Summer Time)
+UPDATE_COMPLETE                     hostingS3AndCloudFront              AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:17 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS                  authwhytheyui49b2e0e6               AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:17 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS                  hostingS3AndCloudFront              AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:17 GMT+0100 (British Summer Time)
+UPDATE_COMPLETE_CLEANUP_IN_PROGRESS whytheyui-production-20190927211816 AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:16 GMT+0100 (British Summer Time)
+CREATE_COMPLETE                     storages3d5661de9                   AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:14 GMT+0100 (British Summer Time)
+⠼ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE whytheyui-production-20190927211816 AWS::CloudFormation::Stack Sat Sep 28 2019 13:16:17 GMT+0100 (British Summer Time)
+✔ All resources are updated in the cloud
+```
+
+### This changed on AWS
+
+1. A lot of creations and updates to the Cloudformation Stack
+1. Created an __S3 Bucket__ : __why-they-ui8e365250dbc34261827c0224d79c0b3d-production__ for the uploads.
+
+### Update App.js
+
+We need to make some changes to App.js so that the web page uses a file uploader and sends it to the right location.
+
+1. Add Analytics and Storage to `import Amplify,`
+1. Add uploadFile method to the App class
+1. Change the page React to have a file input and an s3 Album
+
+__VERY IMPORTANT NOTE 1:__ 
+
+the Amplify Storage class defines the storage level as __private__. 
+
+    Storage.configure({ level: 'private' });
+
+This is nothing to do with AWS permissions !!! if the level was 'public' then all files would be stored on a __/public/__ folder in the s3 bucket. __Private__ stores files in the bucket folder __/private/eu-west-1:1b168ac7-de16-4924-890b-f8196ccad9e3__ where the __eu-west-1:1b168ac7-de16-4924-890b-f8196ccad9e3__ is the federated identity of the user. This is not the same as the cognito user pool id. Federated id is the same across all authentication providers such as Facebook & Twitter as well as cognito itself.
+
+```
+import React from 'react';
+import logo from './logo.svg';
+import './App.css';
+
+import awsconfig from './aws-exports';
+
+import Amplify, { Analytics, Storage } from 'aws-amplify';
+import { withAuthenticator, S3Album } from 'aws-amplify-react';
+
+Amplify.configure(awsconfig);
+
+/*
+ * This is nothing to do with AWS permissions !!!
+ * if the level was 'public' then all files would be stored on a /public subfolder on s3.
+ * private stores files in private/eu-west-1:1b168ac7-de16-4924-890b-f8196ccad9e3
+ * where the eu-west-1:1b168ac7-de16-4924-890b-f8196ccad9e3 is the federated cognito identity of the user.
+ *
+ * NOTE: the s3Album element below also lists level="private" which will be where the album looks to download files.
+ *
+ */
+Storage.configure({ level: 'private' });
+
+class App extends React.Component {
+
+  uploadFile = (evt) => {
+    const file = evt.target.files[0];
+    const name = file.name;
+
+    Storage.put(name, file).then(() => {
+      this.setState({ file: name });
+    })
+  }
+
+  // amplify analytics
+  componentDidMount() {
+    Analytics.record('Amplify_CLI');
+  }
+  
+  render() {
+    return (
+      <div className="App">
+        <p> Pick a file</p>
+        <input type="file" onChange={this.uploadFile} />
+        <S3Album level="private" path='' />
+      </div>
+    )
+   }
+}
+
+export default withAuthenticator(App, true);
+
+```
+
+__VERY IMPORTANT NOTE 2:__
+
+Amplify __DID NOT CREATE__ AWS permissions for the authenticated user to store or retrieve files in the s3 bucket `why-they-ui8e365250dbc34261827c0224d79c0b3d-production`. I achieved this by creating this policy:
+
+__why-they-authenticated-uploads__
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::why-they-ui8e365250dbc34261827c0224d79c0b3d-production/*",
+                "arn:aws:s3:::why-they-ui8e365250dbc34261827c0224d79c0b3d-production"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+```
+and then attaching the policy to the role __whytheyui-production-20190927211816-authRole__ that is taken on by authenticated users (when they pass the auth token to s3 in the upload request) 
+
+## 6 Add Analytics
+
+Gives us some stats about users and uploads
+
+amplify add storage
+
+```
+Using service: Pinpoint, provided by: awscloudformation
+? Provide your pinpoint resource name: whytheyui
+Adding analytics would add the Auth category to the project if not already added.
+? Apps need authorization to send analytics events. Do you want to allow guests and unauthenticated users to send analytics events? (we recommend you allow this when getting started) Yes
+Successfully updated auth resource locally.
+Successfully added resource whytheyui locally
+
+Some next steps:
+"amplify push" builds all of your local backend resources and provisions them in the cloud
+"amplify publish" builds all your local backend and front-end resources (if you have hosting category added) and provisions them in the cloud
+```
+
+### Local file changes
+
+```
+new file:   amplify/backend/analytics/whytheyui/parameters.json
+new file:   amplify/backend/analytics/whytheyui/pinpoint-cloudformation-template.json
+```
+
+push the changes
+
+    amplify publish
+    
+```
+Current Environment: production
+
+| Category  | Resource name     | Operation | Provider plugin   |
+| --------- | ----------------- | --------- | ----------------- |
+| Analytics | whytheyui         | Create    | awscloudformation |
+| Auth      | whytheyui49b2e0e6 | Update    | awscloudformation |
+| Hosting   | S3AndCloudFront   | No Change | awscloudformation |
+| Storage   | s3d5661de9        | No Change | awscloudformation |
+? Are you sure you want to continue? Yes
+⠙ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS analyticswhytheyui                  AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:43 GMT+0100 (British Summer Time) Resource creation Initiated
+UPDATE_IN_PROGRESS authwhytheyui49b2e0e6               AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:43 GMT+0100 (British Summer Time)
+UPDATE_COMPLETE    storages3d5661de9                   AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:43 GMT+0100 (British Summer Time)
+CREATE_IN_PROGRESS analyticswhytheyui                  AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:43 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS storages3d5661de9                   AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:42 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS whytheyui-production-20190927211816 AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:39 GMT+0100 (British Summer Time) User Initiated
+⠴ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS whytheyui-production-20190927211816-analyticswhytheyui-4P4JLNW55ZGT AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:43 GMT+0100 (British Summer Time) User Initiated
+⠧ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_IN_PROGRESS whytheyui-production-20190927211816-authwhytheyui49b2e0e6-HV1C5OBTXTP0 AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:43 GMT+0100 (British Summer Time) User Initiated
+⠹ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS LambdaExecutionRole AWS::IAM::Role Sat Sep 28 2019 14:53:46 GMT+0100 (British Summer Time)
+⠙ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE    hostingS3AndCloudFront AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:48 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS hostingS3AndCloudFront AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:47 GMT+0100 (British Summer Time)
+⠴ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS LambdaExecutionRole AWS::IAM::Role Sat Sep 28 2019 14:53:47 GMT+0100 (British Summer Time) Resource creation Initiated
+⠧ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE    IdentityPool AWS::Cognito::IdentityPool Sat Sep 28 2019 14:53:50 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS IdentityPool AWS::Cognito::IdentityPool Sat Sep 28 2019 14:53:48 GMT+0100 (British Summer Time)
+⠋ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE_CLEANUP_IN_PROGRESS whytheyui-production-20190927211816-authwhytheyui49b2e0e6-HV1C5OBTXTP0 AWS::CloudFormation::Stack Sat Sep 28 2019 14:53:54 GMT+0100 (British Summer Time)
+⠹ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE authwhytheyui49b2e0e6 AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:05 GMT+0100 (British Summer Time)
+⠴ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_COMPLETE    PinpointFunction    AWS::Lambda::Function Sat Sep 28 2019 14:54:09 GMT+0100 (British Summer Time)
+CREATE_IN_PROGRESS PinpointFunction    AWS::Lambda::Function Sat Sep 28 2019 14:54:09 GMT+0100 (British Summer Time) Resource creation Initiated
+CREATE_IN_PROGRESS PinpointFunction    AWS::Lambda::Function Sat Sep 28 2019 14:54:08 GMT+0100 (British Summer Time)
+CREATE_COMPLETE    LambdaExecutionRole AWS::IAM::Role        Sat Sep 28 2019 14:54:06 GMT+0100 (British Summer Time)
+⠇ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS PinpointFunctionOutputs Custom::LambdaCallout Sat Sep 28 2019 14:54:10 GMT+0100 (British Summer Time)
+⠹ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_IN_PROGRESS CognitoAuthPolicy       AWS::IAM::Policy      Sat Sep 28 2019 14:54:17 GMT+0100 (British Summer Time) Resource creation Initiated
+CREATE_IN_PROGRESS CognitoUnauthPolicy     AWS::IAM::Policy      Sat Sep 28 2019 14:54:16 GMT+0100 (British Summer Time) Resource creation Initiated
+CREATE_IN_PROGRESS CognitoAuthPolicy       AWS::IAM::Policy      Sat Sep 28 2019 14:54:16 GMT+0100 (British Summer Time)
+CREATE_IN_PROGRESS CognitoUnauthPolicy     AWS::IAM::Policy      Sat Sep 28 2019 14:54:15 GMT+0100 (British Summer Time)
+CREATE_COMPLETE    PinpointFunctionOutputs Custom::LambdaCallout Sat Sep 28 2019 14:54:14 GMT+0100 (British Summer Time)
+CREATE_IN_PROGRESS PinpointFunctionOutputs Custom::LambdaCallout Sat Sep 28 2019 14:54:14 GMT+0100 (British Summer Time) Resource creation Initiated
+⠏ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_COMPLETE CognitoAuthPolicy   AWS::IAM::Policy Sat Sep 28 2019 14:54:25 GMT+0100 (British Summer Time)
+CREATE_COMPLETE CognitoUnauthPolicy AWS::IAM::Policy Sat Sep 28 2019 14:54:25 GMT+0100 (British Summer Time)
+⠇ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_COMPLETE whytheyui-production-20190927211816-analyticswhytheyui-4P4JLNW55ZGT AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:26 GMT+0100 (British Summer Time)
+⠴ Updating resources in the cloud. This may take a few minutes...
+
+CREATE_COMPLETE analyticswhytheyui AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:30 GMT+0100 (British Summer Time)
+⠴ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE                     storages3d5661de9                   AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:33 GMT+0100 (British Summer Time)
+UPDATE_COMPLETE                     hostingS3AndCloudFront              AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:33 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS                  storages3d5661de9                   AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:33 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS                  hostingS3AndCloudFront              AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:33 GMT+0100 (British Summer Time)
+UPDATE_IN_PROGRESS                  authwhytheyui49b2e0e6               AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:33 GMT+0100 (British Summer Time)
+UPDATE_COMPLETE_CLEANUP_IN_PROGRESS whytheyui-production-20190927211816 AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:32 GMT+0100 (British Summer Time)
+⠏ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE whytheyui-production-20190927211816-authwhytheyui49b2e0e6-HV1C5OBTXTP0 AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:34 GMT+0100 (British Summer Time)
+⠦ Updating resources in the cloud. This may take a few minutes...
+
+UPDATE_COMPLETE whytheyui-production-20190927211816 AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:44 GMT+0100 (British Summer Time)
+UPDATE_COMPLETE authwhytheyui49b2e0e6               AWS::CloudFormation::Stack Sat Sep 28 2019 14:54:44 GMT+0100 (British Summer Time)
+✔ All resources are updated in the cloud
+
+Pinpoint URL to track events https://eu-west-1.console.aws.amazon.com/pinpoint/home/?region=eu-west-1#/apps/cb7d746be7304092a16c2d512fb3d37b/analytics/overview
+
+
+> why_they_ui@0.1.0 build /Users/stephencreedon/devel/why_they/why_they_ui
+> react-scripts build
+
+Creating an optimized production build...
+Compiled with warnings.
+
+./src/App.js
+  Line 2:  'logo' is defined but never used  no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+File sizes after gzip:
+
+  546.87 KB        build/static/js/2.f473f208.chunk.js
+  3.63 KB          build/static/css/2.e25306ee.chunk.css
+  1.18 KB (+40 B)  build/static/js/main.b67c81ac.chunk.js
+  776 B            build/static/js/runtime-main.036a161d.js
+  417 B            build/static/css/main.b100e6da.chunk.css
+
+The project was built assuming it is hosted at the server root.
+You can control this with the homepage field in your package.json.
+For example, add this to build it for GitHub Pages:
+
+  "homepage" : "http://myname.github.io/myapp",
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://bit.ly/CRA-deploy
+
+frontend build command exited with code 0
+✔ Uploaded files successfully.
+Your app is published successfully.
+https://d3fgsvmqcoyxsy.cloudfront.net
+```
+
+### What changed on AWS
+
+1. Lots of changes around Cloudforamtion Stack
+1. Creation of lambda and roles for AWS 'Pinpoint' analytics.
+
+This line in the `src/App.js` App class triggers a call to analytics
+
+```
+  componentDidMount() {
+    Analytics.record('Amplify_CLI');
+  }
+```
