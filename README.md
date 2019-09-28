@@ -1,6 +1,11 @@
 # Why They UI
 
-This is a varied & detailed breakdown of the example [react/amplify app](https://aws-amplify.github.io/docs/js/react) used as the basis
+This is a variation (& much more detailed breakdown) of the tutorial [react/amplify app](https://aws-amplify.github.io/docs/js/react). This will create and deploy a serverless application using AWS Amplify and React.js that will:
+
+
+1. Deploy the app to AWS (in production environment)
+1. Enable users to sign-up and in using AWS Cognito
+1. Upload and view files the authenticated user has uploaded to a non-public S3.
 
 ## 1. Create the React App
 
